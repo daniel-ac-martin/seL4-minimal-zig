@@ -63,25 +63,6 @@ inline fn x64_sys_send_recv(sys: seL4_Word, dest: seL4_Word, out_dest: *seL4_Wor
     in_out_mr3.* = mr3;
 }
 
-pub inline fn debugPutCharX(c: u8) void {
-    const sys: seL4_Word = @bitCast(seL4_SysDebugPutChar);
-    const dest: seL4_Word = c;
-    const info: seL4_Word = 0;
-    const reply: seL4_Word = 0;
-
-    asm volatile (
-        \\movq   %%rsp, %%rbx
-        \\syscall
-        \\movq   %%rbx, %%rsp
-        :
-        : [sys] "{rdx}" (sys),
-          [dest] "{rdi}" (dest),
-          [info] "{rsi}" (info),
-          [reply] "{r12}" (reply),
-        : "%rcx", "%rbx", "r11", "memory"
-    );
-}
-
 pub inline fn debugPutChar(arg_c: u8) void {
     var c = arg_c;
     var unused0: seL4_Word = 0;
@@ -91,6 +72,5 @@ pub inline fn debugPutChar(arg_c: u8) void {
     var unused4: seL4_Word = 0;
     var unused5: seL4_Word = 0;
 
-    //x64_sys_send_recv(@as(seL4_Word, @bitCast(@as(c_long, seL4_SysDebugPutChar))), @as(seL4_Word, @bitCast(@as(c_ulong, c))), &unused0, @as(seL4_Word, @bitCast(@as(c_long, @as(c_int, 0)))), &unused1, &unused2, &unused3, &unused4, &unused5, @as(seL4_Word, @bitCast(@as(c_long, @as(c_int, 0)))));
     x64_sys_send_recv(@bitCast(seL4_SysDebugPutChar), c, &unused0, 0, &unused1, &unused2, &unused3, &unused4, &unused5, 0);
 }

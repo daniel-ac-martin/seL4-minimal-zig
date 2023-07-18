@@ -18,7 +18,7 @@ qemu_flags ?= $(qemu_flags_$(arch))
 
 SOURCES = $(shell find src -name '*.zig')
 
-.PHONY: all clean initrd kernel run run-kernel run-alt
+.PHONY: all clean initrd kernel run run-kernel
 
 all: kernel initrd
 
@@ -34,15 +34,11 @@ run-kernel: build/$(arch)-$(plat)/kernel.img
 run: build/$(arch)-$(plat)/kernel.img build/$(arch)-$(plat)/initrd.img
 	$(qemu) $(qemu_flags) -kernel $(<) -initrd build/$(arch)-$(plat)/initrd.img
 
-run-alt: build/$(arch)-$(plat)/kernel.img build/$(arch)-$(plat)/bin/roottask
-	$(qemu) $(qemu_flags) -kernel $(<) -initrd build/$(arch)-$(plat)/bin/roottask
-
 build/$(arch)-$(plat)/kernel.img: build/$(arch)-$(plat)/deps/seL4/seL4/kernel.elf
 	mkdir -p $(@D)
 	objcopy -O elf32-i386 $(<) $(@)
 
 build/$(arch)-$(plat)/initrd.img: build/$(arch)-$(plat)/roottask.elf
-#build/$(arch)-$(plat)/initrd.img: build/$(arch)-$(plat)/bin/roottask
 	mkdir -p $(@D)
 	cp $(<) $(@)
 
@@ -64,7 +60,4 @@ build/$(arch)-$(plat)/roottask.elf: build/$(arch)-$(plat)/lib/libroottask.a
 	$(LD) -m elf_x86_64 -nostdlib -static -z max-page-size=0x1000 --require-defined _start -o $(@) $(^)
 
 build/$(arch)-$(plat)/lib/libroottask.a: $(SOURCES)
-	zig build -p $(@D)/../
-
-build/$(arch)-$(plat)/bin/roottask: $(SOURCES)
 	zig build -p $(@D)/../
