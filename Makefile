@@ -57,7 +57,7 @@ build/$(arch)-$(plat)/deps/seL4/seL4/kernel.elf: build/$(arch)-$(plat)/deps/seL4
 
 build/$(arch)-$(plat)/roottask.elf: build/$(arch)-$(plat)/lib/libroottask.a
 	mkdir -p $(@D)
-	$(LD) -m elf_x86_64 -nostdlib -static -z max-page-size=0x1000 --require-defined _start -o $(@) $(^)
+	$(LD) --require-defined _start -o $(@) $(^)
 
 build/$(arch)-$(plat)/lib/libroottask.a: $(SOURCES)
 	zig build -p $(@D)/../
