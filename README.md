@@ -33,7 +33,7 @@ In order to build and run this software, you will need:
 - [Python]3 and some packages (to build the kernel):
   - [setuptools]: `pip3 install --user setuptools`
   - [sel4-deps]: `pip3 install --user sel4-deps`
-- [Zig]  (to build the roottask / root-server / initrd)
+- [Zig] >= 0.10  (to build the roottask / root-server / initrd)
 - [GNU Binutils]  (ld and objcopy; to build both, the kernel and
   roottask)
 - [QEMU]  (to run / simulate in a virtual machine)
@@ -84,7 +84,7 @@ Miscellaneous notes
 -------------------
 
 - See also: https://github.com/daniel-ac-martin/seL4-minimal-asm
-- This has been tested on a GNU/Linux system (Fedora 38)
+- This has been tested on a GNU/Linux system (Fedora 38) with Zig 0.11 (not the Fedora package which is v0.9)
 - This is not currently using the [MCS kernel]  (edit [`seL4/x86_64-pc99.cmake`](seL4/x86_64-pc99.cmake) to start work on this)
 - Currently the roottask is a little too simple, and so we have to be careful with how we compile it. We actually require a certain kind of optimisation in order to avoid pushing to the stack! Some sort of initialisation code should be added to avoid this problem.
 - To understand the initial environment of the roottask, it's probably best to consult the C runtime: https://github.com/seL4/sel4runtime
