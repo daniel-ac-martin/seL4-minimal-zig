@@ -25,7 +25,7 @@ set(KernelMaxNumBootinfoUntypedCaps 230 CACHE STRING "") # To copy tutorial (Avo
 #set(KernelFSGSBase "inst" CACHE STRING "")
 
 #set(KernelIsMCS OFF CACHE BOOL "")
-#set(KernelIsMCS ON CACHE BOOL "") # Seems to break things (unknown syscall)
+set(KernelIsMCS ON CACHE BOOL "")
 
 # Simulation support
 set(KernelSupportPCID OFF CACHE BOOL "" FORCE)
