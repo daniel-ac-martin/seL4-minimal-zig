@@ -10,7 +10,7 @@ pub fn build(b: *std.Build) void {
     // for restricting supported target set are available.
     //const target = b.standardTargetOptions(.{});
     const nehalem = &std.Target.x86.cpu.nehalem;
-    const target = .{ .os_tag = .other, .abi = .eabi, .ofmt = .elf, .cpu_arch = .x86_64, .cpu_model = .{ .explicit = nehalem } };
+    const target = .{ .os_tag = .freestanding, .abi = .eabi, .ofmt = .elf, .cpu_arch = .x86_64, .cpu_model = .{ .explicit = nehalem } };
 
     // Standard optimization options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
@@ -27,13 +27,28 @@ pub fn build(b: *std.Build) void {
         .target = target,
         //.optimize = optimize,
         .optimize = .ReleaseSafe,
+        //.optimize = .Debug,
     });
     lib.addModule("libsel4", libsel4);
+
+    const exe = b.addExecutable(.{
+        .name = "roottask",
+        // In this case the main source file is merely a path, however, in more
+        // complicated build scripts, this could be a generated file.
+        .root_source_file = .{ .path = "src/main.zig" },
+        .target = target,
+        //.optimize = optimize,
+        .optimize = .ReleaseSafe,
+        //.optimize = .Debug,
+    });
+    exe.addModule("libsel4", libsel4);
+    exe.setLinkerScriptPath(.{ .path = "lib/libsel4/root-task.ld" });
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
     b.installArtifact(lib);
+    b.installArtifact(exe);
 
     // Creates a step for unit testing. This only builds the test executable
     // but does not run it.

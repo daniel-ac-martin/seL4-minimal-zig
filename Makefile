@@ -16,14 +16,17 @@ word_size = $(word_size_$(arch))
 qemu ?= qemu-system-$(arch)
 qemu_flags ?= $(qemu_flags_$(arch))
 
-SOURCES = $(shell find src -name '*.zig')
+SOURCES = $(shell find src -name '*.zig') $(shell find lib -name '*.zig')
 
-.PHONY: all clean initrd kernel run run-kernel
+.PHONY: all clean clean-initrd initrd kernel run run-kernel
 
 all: kernel initrd
 
 clean:
 	rm -rf build/
+
+clean-initrd:
+	rm -rf build/$(arch)-$(plat)/{bin,lib}/ build/$(arch)-$(plat)/roottask.elf build/$(arch)-$(plat)/initrd.img
 
 initrd: build/$(arch)-$(plat)/initrd.img
 kernel: build/$(arch)-$(plat)/kernel.img
@@ -38,7 +41,8 @@ build/$(arch)-$(plat)/kernel.img: build/$(arch)-$(plat)/deps/seL4/seL4/kernel.el
 	mkdir -p $(@D)
 	objcopy -O elf32-i386 $(<) $(@)
 
-build/$(arch)-$(plat)/initrd.img: build/$(arch)-$(plat)/roottask.elf
+#build/$(arch)-$(plat)/initrd.img: build/$(arch)-$(plat)/roottask.elf
+build/$(arch)-$(plat)/initrd.img: build/$(arch)-$(plat)/bin/roottask
 	mkdir -p $(@D)
 	cp $(<) $(@)
 
@@ -57,7 +61,10 @@ build/$(arch)-$(plat)/deps/seL4/seL4/kernel.elf: build/$(arch)-$(plat)/deps/seL4
 
 build/$(arch)-$(plat)/roottask.elf: build/$(arch)-$(plat)/lib/libroottask.a
 	mkdir -p $(@D)
-	$(LD) --require-defined _start -o $(@) $(^)
+	$(LD) -T lib/libsel4/linker.ld --require-defined _boot -e _boot --require-defined main -o $(@) $(^)
 
 build/$(arch)-$(plat)/lib/libroottask.a: $(SOURCES)
+	zig build -p $(@D)/../
+
+build/$(arch)-$(plat)/bin/roottask: $(SOURCES)
 	zig build -p $(@D)/../
