@@ -1,4 +1,31 @@
-ENTRY(_start)
+/*
+ * Linker script for root-tasks
+ *
+ * The root-task requires:
+ * 1. A special entry-point
+ * 2. An explicitly defined stack
+ */
+
+ENTRY(_boot)
+
+STACK_SIZE = DEFINED(__stack_size__) ? __stack_size__ : 0x1000;
+
+SECTIONS
+{
+    .stack (NOLOAD):
+    {
+        . = ALIGN(16) ;
+        _stack = . ;
+        __stack_base = . ;
+        . = . + STACK_SIZE ;
+        . = ALIGN(16) ;
+        __stack_top = . ;
+        _stack_end = . ;
+    } :data
+}
+INSERT AFTER .tbss;
+
+/* INCLUDE ./linker.ld */
 
 PHDRS
 {
@@ -59,6 +86,7 @@ SECTIONS
 
     .note.GNU-stack (NOLOAD):
     {
-        *(.note.GNU-stack)
+         *(.note.GNU-stack)
     } : gnu-stack
 }
+
