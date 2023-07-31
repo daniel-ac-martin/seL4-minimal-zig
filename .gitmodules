@@ -1,3 +1,6 @@
 [submodule "deps/seL4/seL4"]
 	path = deps/seL4/seL4
 	url = https://github.com/seL4/seL4.git
+[submodule "deps/daniel-ac-martin/seL4.zig"]
+	path = deps/daniel-ac-martin/seL4.zig
+	url = https://github.com/daniel-ac-martin/seL4.zig.git

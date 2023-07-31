@@ -16,7 +16,7 @@ word_size = $(word_size_$(arch))
 qemu ?= qemu-system-$(arch)
 qemu_flags ?= $(qemu_flags_$(arch))
 
-SOURCES = $(shell find src -name '*.zig') $(shell find lib -name '*.zig')
+SOURCES = $(shell find src -name '*.zig') $(shell find deps/daniel-ac-martin/seL4.zig -name '*.zig')
 
 .PHONY: all clean clean-initrd initrd kernel run run-kernel
 
@@ -61,7 +61,7 @@ build/$(arch)-$(plat)/deps/seL4/seL4/kernel.elf: build/$(arch)-$(plat)/deps/seL4
 
 build/$(arch)-$(plat)/roottask.elf: build/$(arch)-$(plat)/lib/libroottask.a
 	mkdir -p $(@D)
-	$(LD) -T lib/libsel4/linker.ld --require-defined _boot -e _boot --require-defined main -o $(@) $(^)
+	$(LD) -T deps/daniel-ac-martin/seL4.zig/linker.ld --require-defined _boot -e _boot --require-defined main -o $(@) $(^)
 
 build/$(arch)-$(plat)/lib/libroottask.a: $(SOURCES)
 	zig build -p $(@D)/../

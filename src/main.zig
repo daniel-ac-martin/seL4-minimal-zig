@@ -1,4 +1,4 @@
-const seL4 = @import("libsel4");
+const seL4 = @import("seL4");
 
 fn word2string(word: u64) [8]u8 {
     var r: [8]u8 = undefined;

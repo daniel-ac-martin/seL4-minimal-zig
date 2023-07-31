@@ -17,7 +17,7 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     //const optimize = b.standardOptimizeOption(.{});
 
-    const libsel4 = b.addModule("libsel4", .{ .source_file = .{ .path = "lib/libsel4/libsel4.zig" } });
+    const seL4 = b.addModule("seL4", .{ .source_file = .{ .path = "deps/daniel-ac-martin/seL4.zig/seL4.zig" } });
 
     const lib = b.addStaticLibrary(.{
         .name = "roottask",
@@ -29,7 +29,7 @@ pub fn build(b: *std.Build) void {
         .optimize = .ReleaseSafe,
         //.optimize = .Debug,
     });
-    lib.addModule("libsel4", libsel4);
+    lib.addModule("seL4", seL4);
 
     const exe = b.addExecutable(.{
         .name = "roottask",
@@ -41,8 +41,8 @@ pub fn build(b: *std.Build) void {
         .optimize = .ReleaseSafe,
         //.optimize = .Debug,
     });
-    exe.addModule("libsel4", libsel4);
-    exe.setLinkerScriptPath(.{ .path = "lib/libsel4/root-task.ld" });
+    exe.addModule("seL4", seL4);
+    exe.setLinkerScriptPath(.{ .path = "deps/daniel-ac-martin/seL4.zig/root-task.ld" });
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
