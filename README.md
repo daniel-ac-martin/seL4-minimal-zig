@@ -87,7 +87,7 @@ Miscellaneous notes
 - This has been tested on a GNU/Linux system (Fedora 38) with Zig 0.11 (not the Fedora package which is v0.9)
 - Only the [MCS kernel] is supported. (`KernelIsMCS` must be set to `ON` in the CMake configuration. e.g: [`seL4/x86_64-pc99.cmake`](seL4/x86_64-pc99.cmake))
 - 32-bit x86 is NOT supported (despite being supported by seL4 itself); x86-64 (64-bit) is supported however.
-- We avoid Zig's 'debug' optimisation level as it seems to have a tendancy to introduce unwanted code that causes linker errors.
+- We avoid Zig's 'debug' optimisation level as it seems to have a tendency to introduce unwanted code that causes linker errors.
 - To understand the initial environment of the roottask, it's probably best to consult the C runtime: https://github.com/seL4/sel4runtime
 - The system calls on x86-64 can be found here: https://github.com/seL4/seL4/blob/master/libsel4/sel4_arch_include/x86_64/sel4/sel4_arch/syscalls.h
 - Thoughts / comments / ideas are welcome in the [issues]
