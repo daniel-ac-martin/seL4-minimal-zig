@@ -16,7 +16,7 @@ word_size = $(word_size_$(arch))
 qemu ?= qemu-system-$(arch)
 qemu_flags ?= $(qemu_flags_$(arch))
 
-SOURCES = $(shell find src -name '*.zig') $(shell find deps/daniel-ac-martin/seL4.zig -name '*.zig')
+SOURCES = $(shell find {src,deps/daniel-ac-martin/seL4.zig} -name '*.zig')
 
 .PHONY: all clean clean-initrd initrd kernel run run-kernel
 
