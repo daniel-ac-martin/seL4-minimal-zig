@@ -26,7 +26,7 @@ clean:
 	rm -rf build/
 
 clean-initrd:
-	rm -rf build/$(arch)-$(plat)/{bin,lib}/ build/$(arch)-$(plat)/roottask.elf build/$(arch)-$(plat)/initrd.img
+	rm -rf build/$(arch)-$(plat)/bin/ build/$(arch)-$(plat)/initrd.img
 
 initrd: build/$(arch)-$(plat)/initrd.img
 kernel: build/$(arch)-$(plat)/kernel.img
@@ -41,7 +41,6 @@ build/$(arch)-$(plat)/kernel.img: build/$(arch)-$(plat)/deps/seL4/seL4/kernel.el
 	mkdir -p $(@D)
 	objcopy -O elf32-i386 $(<) $(@)
 
-#build/$(arch)-$(plat)/initrd.img: build/$(arch)-$(plat)/roottask.elf
 build/$(arch)-$(plat)/initrd.img: build/$(arch)-$(plat)/bin/roottask
 	mkdir -p $(@D)
 	cp $(<) $(@)
@@ -58,13 +57,6 @@ build/$(arch)-$(plat)/deps/seL4/seL4/build.ninja: deps/seL4/seL4/CMakeLists.txt 
 build/$(arch)-$(plat)/deps/seL4/seL4/kernel.elf: build/$(arch)-$(plat)/deps/seL4/seL4/build.ninja
 	mkdir -p $(@D)
 	cd $(@D) && ninja kernel.elf
-
-build/$(arch)-$(plat)/roottask.elf: build/$(arch)-$(plat)/lib/libroottask.a
-	mkdir -p $(@D)
-	$(LD) -T deps/daniel-ac-martin/seL4.zig/linker.ld --require-defined _boot -e _boot --require-defined main -o $(@) $(^)
-
-build/$(arch)-$(plat)/lib/libroottask.a: $(SOURCES)
-	zig build -p $(@D)/../
 
 build/$(arch)-$(plat)/bin/roottask: $(SOURCES)
 	zig build -p $(@D)/../

@@ -19,18 +19,6 @@ pub fn build(b: *std.Build) void {
 
     const seL4 = b.addModule("seL4", .{ .source_file = .{ .path = "deps/daniel-ac-martin/seL4.zig/seL4.zig" } });
 
-    const lib = b.addStaticLibrary(.{
-        .name = "roottask",
-        // In this case the main source file is merely a path, however, in more
-        // complicated build scripts, this could be a generated file.
-        .root_source_file = .{ .path = "src/main.zig" },
-        .target = target,
-        //.optimize = optimize,
-        .optimize = .ReleaseSafe,
-        //.optimize = .Debug,
-    });
-    lib.addModule("seL4", seL4);
-
     const exe = b.addExecutable(.{
         .name = "roottask",
         // In this case the main source file is merely a path, however, in more
@@ -47,7 +35,6 @@ pub fn build(b: *std.Build) void {
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
-    b.installArtifact(lib);
     b.installArtifact(exe);
 
     // Creates a step for unit testing. This only builds the test executable
