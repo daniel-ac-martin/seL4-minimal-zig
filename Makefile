@@ -1,4 +1,4 @@
-LD ?= ld
+ZIG ?= zig
 
 arch ?= x86_64
 plat ?= pc99
@@ -8,7 +8,7 @@ arch_family_x86 = x86
 word_size_x86_64 = 64
 word_size_x86 = 32
 
-qemu_flags_x86_64 ?= -machine pcspk-audiodev=snd0 -cpu Nehalem,-vme,+pdpe1gb,-xsave,-xsaveopt,-xsavec,-fsgsbase,-invpcid,+syscall,+lm,enforce -serial mon:stdio -m size=512M -audiodev pa,id=snd0
+qemu_flags_x86_64 = -machine pcspk-audiodev=snd0 -cpu Nehalem,-vme,+pdpe1gb,-xsave,-xsaveopt,-xsavec,-fsgsbase,-invpcid,+syscall,+lm,enforce -serial mon:stdio -m size=512M -audiodev pa,id=snd0
 
 arch_family = $(arch_family_$(arch))
 word_size = $(word_size_$(arch))
@@ -59,4 +59,4 @@ build/$(arch)-$(plat)/deps/seL4/seL4/kernel.elf: build/$(arch)-$(plat)/deps/seL4
 	cd $(@D) && ninja kernel.elf
 
 build/$(arch)-$(plat)/bin/roottask: $(SOURCES)
-	zig build -p $(@D)/../
+	$(ZIG) build -p $(@D)/../
