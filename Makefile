@@ -3,22 +3,16 @@ ZIG ?= zig
 arch ?= x86_64
 plat ?= pc99
 
-arch_family_x86_64 = x86
-arch_family_x86 = x86
-word_size_x86_64 = 64
-word_size_x86 = 32
-
-qemu_flags_x86_64 = -machine pcspk-audiodev=snd0 -cpu Nehalem,-vme,+pdpe1gb,-xsave,-xsaveopt,-xsavec,-fsgsbase,-invpcid,+syscall,+lm,enforce -serial mon:stdio -m size=512M -audiodev pa,id=snd0
-
-arch_family = $(arch_family_$(arch))
-word_size = $(word_size_$(arch))
-
-qemu ?= qemu-system-$(arch)
-qemu_flags ?= $(qemu_flags_$(arch))
-
 SOURCES = $(shell find {src,deps/daniel-ac-martin/seL4.zig} -name '*.zig')
 
-.PHONY: all clean clean-initrd initrd kernel run run-kernel
+ninja_files = build/%/seL4/simulate \
+              build/%/seL4/kernel/kernel.elf \
+              build/%/seL4/libsel4/libsel4.a \
+              build/%/seL4/musllibc/build-temp/lib/libc.a \
+              build/%/seL4/include/sel4/sel4.h
+
+.PHONY: all clean clean-initrd initrd kernel run
+.SECONDARY: $(build/%/seL4/build.ninja)
 
 all: kernel initrd
 
@@ -26,37 +20,52 @@ clean:
 	rm -rf build/
 
 clean-initrd:
-	rm -rf build/$(arch)-$(plat)/bin/ build/$(arch)-$(plat)/initrd.img
+	rm -rf build/$(arch)-$(plat)/bin/ build/$(arch)-$(plat)/images/initrd.img
 
-initrd: build/$(arch)-$(plat)/initrd.img
-kernel: build/$(arch)-$(plat)/kernel.img
+initrd: build/$(arch)-$(plat)/images/initrd.img
+kernel: build/$(arch)-$(plat)/images/kernel.img
 
-run-kernel: build/$(arch)-$(plat)/kernel.img
-	$(qemu) $(qemu_flags) -kernel $(<)
+run: build/$(arch)-$(plat)/simulate initrd kernel
+	cd "$(<D)" && ./simulate \
+		--graphic="" \
+		--extra-qemu-args="-audiodev pa,id=snd0" \
+		--machine="pcspk-audiodev=snd0"
 
-run: build/$(arch)-$(plat)/kernel.img build/$(arch)-$(plat)/initrd.img
-	$(qemu) $(qemu_flags) -kernel $(<) -initrd build/$(arch)-$(plat)/initrd.img
+build/%/simulate: build/%/seL4/simulate
+	mkdir -p "$(@D)"
+	tac "$(<)" | tail -n +4 | tac > "$(@)"
+	sed -i -E "s/images\/kernel-[^\"]+/images\/kernel.img/" "$(@)"
+	sed -i -E "s/images\/roottask-image-[^\"]+/images\/initrd.img/" "$(@)"
+	chmod +x "$(@)"
 
-build/$(arch)-$(plat)/kernel.img: build/$(arch)-$(plat)/deps/seL4/seL4/kernel.elf
-	mkdir -p $(@D)
-	objcopy -O elf32-i386 $(<) $(@)
+$(ninja_files): build/%/seL4/build.ninja
+	cd "$(<D)" && ninja
 
-build/$(arch)-$(plat)/initrd.img: build/$(arch)-$(plat)/bin/roottask
-	mkdir -p $(@D)
-	cp $(<) $(@)
-
-build/$(arch)-$(plat)/deps/seL4/seL4/build.ninja: deps/seL4/seL4/CMakeLists.txt seL4/$(arch)-$(plat).cmake
-	mkdir -p $(@D)
-	cd $(@D) && cmake \
-		-DCROSS_COMPILER_PREFIX= \
-		-DCMAKE_TOOLCHAIN_FILE=../../../../../$(<D)/gcc.cmake \
+build/%/seL4/build.ninja: seL4/%.cmake seL4/CMakeLists.txt
+	mkdir -p "$(@D)"
+	cd "$(@D)" && cmake \
+		-C "../../../$(<)" \
 		-G Ninja \
-		-C ../../../../../seL4/$(arch)-$(plat).cmake \
-		../../../../../$(<D)
+		"../../../$(<D)"
 
-build/$(arch)-$(plat)/deps/seL4/seL4/kernel.elf: build/$(arch)-$(plat)/deps/seL4/seL4/build.ninja
-	mkdir -p $(@D)
-	cd $(@D) && ninja kernel.elf
+build/%/images/kernel.img: build/%/seL4/kernel/kernel.elf
+	mkdir -p "$(@D)"
+	/usr/bin/objcopy -O elf32-i386 "$(<)" "$(@)"
 
-build/$(arch)-$(plat)/bin/roottask: $(SOURCES)
-	$(ZIG) build -p $(@D)/../
+build/%/images/initrd.img: build/%/bin/roottask
+	mkdir -p "$(@D)"
+	cp "$(<)" "$(@)"
+
+# build/%/images/initrd.img: build/%/lib/libroottask.a build/%/seL4/libsel4/libsel4.a build/%/seL4/musllibc/build-temp/lib/libc.a
+# 	mkdir -p "$(@D)"
+# 	ld -T "deps/daniel-ac-martin/seL4.zig/root-task.ld" -e _boot $(^) -o "$(@)"
+
+build/%/bin/roottask: $(SOURCES) build/%/seL4/include/sel4/sel4.h build/%/seL4/libsel4/libsel4.a build/%/seL4/musllibc/build-temp/lib/libc.a
+	$(ZIG) build \
+		-p "$(@D)/../" \
+		-Dinclude="$(@D)/../seL4/include" \
+		-Dlibsel4="$(@D)/../seL4/libsel4/libsel4.a" \
+		-Dlibc="$(@D)/../seL4/musllibc/build-temp/lib/libc.a" \
+
+# build/%/lib/libroottask.a: $(SOURCES) build/%/seL4/include/sel4/sel4.h
+# 	$(ZIG) build -p $(@D)/../

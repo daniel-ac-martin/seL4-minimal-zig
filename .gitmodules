@@ -4,3 +4,9 @@
 [submodule "deps/daniel-ac-martin/seL4.zig"]
 	path = deps/daniel-ac-martin/seL4.zig
 	url = https://github.com/daniel-ac-martin/seL4.zig.git
+[submodule "deps/seL4/seL4_tools"]
+	path = deps/seL4/seL4_tools
+	url = https://github.com/seL4/seL4_tools.git
+[submodule "deps/seL4/musllibc"]
+	path = deps/seL4/musllibc
+	url = https://github.com/seL4/musllibc.git

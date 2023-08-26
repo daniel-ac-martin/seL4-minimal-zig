@@ -4,6 +4,26 @@ const std = @import("std");
 // declaratively construct a build graph that will be executed by an external
 // runner.
 pub fn build(b: *std.Build) void {
+    const include_path = b.option(
+        []const u8,
+        "include",
+        "path to C include directory",
+    ) orelse "";
+    const libsel4_path = b.option(
+        []const u8,
+        "libsel4",
+        "path to libsel4.a",
+    ) orelse "";
+    const libc_path = b.option(
+        []const u8,
+        "libc",
+        "path to libc.a",
+    ) orelse "";
+    const opts = b.addOptions();
+    opts.addOption([]const u8, "", include_path);
+    opts.addOption([]const u8, "", libsel4_path);
+    opts.addOption([]const u8, "", libc_path);
+
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
@@ -17,7 +37,8 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     //const optimize = b.standardOptimizeOption(.{});
 
-    const seL4 = b.addModule("seL4", .{ .source_file = .{ .path = "deps/daniel-ac-martin/seL4.zig/seL4.zig" } });
+    const seL4_path = "deps/daniel-ac-martin/seL4.zig";
+    const seL4 = b.addModule("seL4", .{ .source_file = .{ .path = seL4_path ++ "/seL4.zig" } });
 
     const exe = b.addExecutable(.{
         .name = "roottask",
@@ -30,12 +51,33 @@ pub fn build(b: *std.Build) void {
         //.optimize = .Debug,
     });
     exe.addModule("seL4", seL4);
-    exe.setLinkerScriptPath(.{ .path = "deps/daniel-ac-martin/seL4.zig/root-task.ld" });
+    exe.addIncludePath(include_path);
+    exe.addObjectFile(libsel4_path);
+    exe.addObjectFile(libc_path);
+    exe.setLinkerScriptPath(.{ .path = seL4_path ++ "/root-task.ld" });
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
     b.installArtifact(exe);
+
+    // const lib = b.addStaticLibrary(.{
+    //     .name = "roottask",
+    //     // In this case the main source file is merely a path, however, in more
+    //     // complicated build scripts, this could be a generated file.
+    //     .root_source_file = .{ .path = "src/main.zig" },
+    //     .target = target,
+    //     //.optimize = optimize,
+    //     .optimize = .ReleaseSafe,
+    //     //.optimize = .Debug,
+    // });
+    // lib.addModule("seL4", seL4);
+    // lib.addIncludePath("build/x86_64-pc99/seL4/include");
+
+    // // This declares intent for the executable to be installed into the
+    // // standard location when the user invokes the "install" step (the default
+    // // step when running `zig build`).
+    // b.installArtifact(lib);
 
     // Creates a step for unit testing. This only builds the test executable
     // but does not run it.
