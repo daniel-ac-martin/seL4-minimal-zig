@@ -5,7 +5,6 @@ set(header_name "sel4/sel4.h")
 set(include_gen "${CMAKE_CURRENT_BINARY_DIR}")
 set(header_gen "${include_gen}/${header_name}")
 set(roottask_dep "${CMAKE_CURRENT_SOURCE_DIR}/src/main.c")
-# set(lib_dep "${CMAKE_CURRENT_SOURCE_DIR}/src/lib.c")
 set(dep "${CMAKE_CURRENT_SOURCE_DIR}/include/sel4/sel4.h")
 
 # Dummy root-task
@@ -20,17 +19,6 @@ target_link_libraries(
 )
 include(rootserver)
 DeclareRootserver(roottask)
-
-# libsel4
-# add_library(sel4_static STATIC ${lib_dep})
-# target_link_libraries(
-#   sel4_static
-#   PUBLIC
-#     sel4
-#     muslc
-#   PRIVATE
-#     sel4_autoconf
-# )
 
 add_custom_command(
   OUTPUT

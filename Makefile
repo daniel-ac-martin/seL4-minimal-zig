@@ -56,16 +56,9 @@ build/%/images/initrd.img: build/%/bin/roottask
 	mkdir -p "$(@D)"
 	cp "$(<)" "$(@)"
 
-# build/%/images/initrd.img: build/%/lib/libroottask.a build/%/seL4/libsel4/libsel4.a build/%/seL4/musllibc/build-temp/lib/libc.a
-# 	mkdir -p "$(@D)"
-# 	ld -T "deps/daniel-ac-martin/seL4.zig/root-task.ld" -e _boot $(^) -o "$(@)"
-
 build/%/bin/roottask: $(SOURCES) build/%/seL4/include/sel4/sel4.h build/%/seL4/libsel4/libsel4.a build/%/seL4/musllibc/build-temp/lib/libc.a
 	$(ZIG) build \
 		-p "$(@D)/../" \
 		-Dinclude="$(@D)/../seL4/include" \
 		-Dlibsel4="$(@D)/../seL4/libsel4/libsel4.a" \
 		-Dlibc="$(@D)/../seL4/musllibc/build-temp/lib/libc.a" \
-
-# build/%/lib/libroottask.a: $(SOURCES) build/%/seL4/include/sel4/sel4.h
-# 	$(ZIG) build -p $(@D)/../
