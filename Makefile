@@ -58,5 +58,18 @@ build/$(arch)-$(plat)/deps/seL4/seL4/kernel.elf: build/$(arch)-$(plat)/deps/seL4
 	mkdir -p $(@D)
 	cd $(@D) && ninja kernel.elf
 
-build/$(arch)-$(plat)/bin/roottask: $(SOURCES)
+build/$(arch)-$(plat)/deps/seL4/seL4/libsel4/build.ninja: deps/seL4/seL4/libsel4/CMakeLists.txt seL4/$(arch)-$(plat).cmake
+	mkdir -p $(@D)
+	cd $(@D) && cmake \
+		-DCROSS_COMPILER_PREFIX= \
+		-DCMAKE_TOOLCHAIN_FILE=../../../../../../$(<D)/../gcc.cmake \
+		-G Ninja \
+		-C ../../../../../../seL4/$(arch)-$(plat).cmake \
+		../../../../../../$(<D)
+
+build/$(arch)-$(plat)/deps/seL4/seL4/libsel4/libsel4.a: build/$(arch)-$(plat)/deps/seL4/seL4/libsel4/build.ninja
+	mkdir -p $(@D)
+	cd $(@D) && ninja libsel4.a
+
+build/$(arch)-$(plat)/bin/roottask: $(SOURCES) build/$(arch)-$(plat)/deps/seL4/seL4/libsel4/libsel4.a
 	$(ZIG) build -p $(@D)/../
