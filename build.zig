@@ -40,6 +40,37 @@ pub fn build(b: *std.Build) void {
     const seL4_path = "deps/daniel-ac-martin/seL4.zig";
     const seL4 = b.addModule("seL4", .{ .source_file = .{ .path = seL4_path ++ "/seL4.zig" } });
 
+    const subtask = b.addExecutable(.{
+        .name = "subtask",
+        // In this case the main source file is merely a path, however, in more
+        // complicated build scripts, this could be a generated file.
+        .root_source_file = .{ .path = "subtask/main.zig" },
+        .target = target,
+        //.optimize = optimize,
+        .optimize = .ReleaseSafe,
+        //.optimize = .Debug,
+    });
+    subtask.addModule("seL4", seL4);
+    subtask.addIncludePath(.{ .path = include_path });
+    subtask.addObjectFile(.{ .path = libsel4_path });
+    subtask.addObjectFile(.{ .path = libc_path });
+    //subtask.setLinkerScriptPath(.{ .path = seL4_path ++ "/linker.ld" });
+
+    // const subtask_obj = b.addSystemCommand(&[_][]const u8{
+    //     "ld.lld",
+    //     "-r",
+    //     "-m",
+    //     "elf_x86_64",
+    //     "-o",
+    //     "subtask.o",
+    //     "-b",
+    //     "binary",
+    // });
+    // subtask_obj.addArtifactArg(subtask);
+
+    // const artefacts = b.addOptions();
+    // artefacts.addOptionArtifact("subtask", subtask);
+
     const exe = b.addExecutable(.{
         .name = "roottask",
         // In this case the main source file is merely a path, however, in more
@@ -51,14 +82,23 @@ pub fn build(b: *std.Build) void {
         //.optimize = .Debug,
     });
     exe.addModule("seL4", seL4);
-    exe.addIncludePath(include_path);
-    exe.addObjectFile(libsel4_path);
-    exe.addObjectFile(libc_path);
+    exe.addIncludePath(.{ .path = include_path });
+    exe.addObjectFile(.{ .path = libsel4_path });
+    exe.addObjectFile(.{ .path = libc_path });
+    // exe.addObjectFile("subtask.o");
+    // opts.addOption([]const u8, "subtask", subtask.getOutputSource().generated.getPath());
+    // exe.addOptions("artefacts", artefacts);
+    //exe.addAnonymousModule("subtask", .{ .source_file = .{ .generated = &.{ .step = &subtask.step } } });
+    //exe.addAnonymousModule("subtask", .{ .source_file = .{ .generated = subtask.getOutputSource().generated } }); // WORKS!
+    exe.addAnonymousModule("subtask", .{ .source_file = subtask.getOutputSource() }); // Also WORKS!
     exe.setLinkerScriptPath(.{ .path = seL4_path ++ "/root-task.ld" });
+    // exe.step.dependOn(&subtask_obj.step);
+    // exe.step.dependOn(&subtask.step);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
+    b.installArtifact(subtask);
     b.installArtifact(exe);
 
     // Creates a step for unit testing. This only builds the test executable
