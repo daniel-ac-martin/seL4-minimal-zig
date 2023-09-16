@@ -1,7 +1,5 @@
 const seL4 = @import("seL4");
-// const artefacts = @import("artefacts");
 
-// const subtask = @embedFile(artefacts.subtask);
 const subtask = @embedFile("subtask");
 
 export fn main() void {
@@ -27,8 +25,6 @@ export fn main() void {
     );
     seL4.debug.dumpScheduler();
 
-    // seL4.debug.putString("Subtask is from: ");
-    // seL4.debug.putString(artefacts.subtask ++ "\n");
     seL4.debug.putString("Subtask has size: ");
     seL4.debug.print("{}\n", .{subtask.len});
 
